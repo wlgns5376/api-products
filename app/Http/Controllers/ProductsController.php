@@ -30,11 +30,13 @@ class ProductsController extends Controller
         $request->validate([
             'name' => 'required',
             'price' => 'required|numeric',
+            'stock' => 'nullable|integer|min:0'
         ]);
 
         $product = Product::create($request->only([
             'name',
-            'price'
+            'price',
+            'stock'
         ]));
 
         return $product;
@@ -66,10 +68,12 @@ class ProductsController extends Controller
 
         $request->validate([
             'price' => 'numeric',
+            'stock' => 'nullable|integer|min:0'
         ]);
 
         $product->name = $request->name;
         $product->price = $request->price;
+        $product->stock = $request->stock;
 
         $product->save();
 

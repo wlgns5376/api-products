@@ -10,6 +10,15 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'price'
+        'name', 'price', 'stock'
     ];
+
+    protected $attributes = [
+        'stock' => null,
+    ];
+
+    public function isUnlimitedStock()
+    {
+        return is_null($this->stock);
+    }
 }

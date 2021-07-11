@@ -78,5 +78,23 @@ class ProductReadAndModifyTest extends TestCase
                 ->assertJsonValidationErrors([
                     'price' => 'number',
                 ]);
+
+        $response = $this->putJson('/api/products/'.$product->id, [
+            'stock' => 1.99,
+        ]);
+
+        $response->assertStatus(422)
+                ->assertJsonValidationErrors([
+                    'stock' => 'integer',
+                ]);
+
+        $response = $this->putJson('/api/products/'.$product->id, [
+            'stock' => -1,
+        ]);
+
+        $response->assertStatus(422)
+                ->assertJsonValidationErrors([
+                    'stock' => 'least 0',
+                ]);
     }
 }
