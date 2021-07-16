@@ -10,7 +10,7 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'price', 'stock'
+        'name', 'price', 'stock', 'image'
     ];
 
     protected $attributes = [
@@ -21,4 +21,5 @@ class Product extends Model
     {
         return is_null($this->stock);
     }
+
 }

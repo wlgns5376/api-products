@@ -25,7 +25,7 @@ class ProductReadAndModifyTest extends TestCase
         $response = $this->getJson($url);
 
         $response->assertStatus(200);
-        $this->assertEquals($product->id, $response['id']);
+        $this->assertEquals($product->id, $response['data']['id']);
 
         // Modify test
         $newProduct = Product::factory()->make();
@@ -36,9 +36,11 @@ class ProductReadAndModifyTest extends TestCase
 
         $response->assertStatus(200)
                 ->assertJson([
-                    'id' => $product->id,
-                    'name' => $newProduct->name,
-                    'price' => $newProduct->price,
+                    'data' => [
+                        'id' => $product->id,
+                        'name' => $newProduct->name,
+                        'price' => $newProduct->price,
+                    ]
                 ]);
     }
 

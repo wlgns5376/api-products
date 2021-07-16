@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ProductStoreTest extends TestCase
@@ -81,8 +83,8 @@ class ProductStoreTest extends TestCase
         ]);
 
         $response->assertStatus(201);
-        $this->assertEquals($response['price'], $product->price);
-        $this->assertNotEmpty($response['id']);
+        $this->assertEquals($response['data']['price'], $product->price);
+        $this->assertNotEmpty($response['data']['id']);
     }
 
     /**
@@ -99,7 +101,7 @@ class ProductStoreTest extends TestCase
         ]);
 
         $response->assertStatus(201);
-        $this->assertNull($response['stock']);
+        $this->assertNull($response['data']['stock']);
     }
 
     /**
@@ -117,5 +119,29 @@ class ProductStoreTest extends TestCase
 
         $product->stock = 0;
         $this->assertFalse($product->isUnlimitedStock());
+    }
+
+    /**
+     * Image upload test
+     * 
+     * @return void
+     */
+    public function test_stored_image_product()
+    {
+        Storage::fake('public');
+
+        $image = UploadedFile::fake()->image('product.jpg');
+        $product = Product::factory()->make();
+        $response = $this->postJson('/api/products', [
+            'name' => $product->name,
+            'price' => $product->price,
+            'stock' => $product->stock,
+            'image' => $image,
+        ]);
+
+        $response->assertStatus(201)
+                ->assertJsonPath('data.image', $image->hashName());
+
+        Storage::disk('public')->assertExists('images/'.$response['data']['image']);
     }
 }

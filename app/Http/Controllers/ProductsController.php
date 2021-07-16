@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ProductCollection;
+use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductsController extends Controller
 {
@@ -14,9 +17,7 @@ class ProductsController extends Controller
      */
     public function index()
     {
-        $products = Product::paginate(15);
-        
-        return $products;
+        return new ProductCollection(Product::paginate(15));
     }
 
     /**
@@ -33,13 +34,19 @@ class ProductsController extends Controller
             'stock' => 'nullable|integer|min:0'
         ]);
 
-        $product = Product::create($request->only([
+        $data = $request->only([
             'name',
             'price',
-            'stock'
-        ]));
+            'stock',
+        ]);
 
-        return $product;
+        if ($request->hasFile('image') && $request->file('image')->isValid()) {
+            $data['image'] = basename($request->file('image')->store('images', 'public'));
+        }
+
+        $product = Product::create($data);
+
+        return new ProductResource($product);
     }
 
     /**
@@ -50,9 +57,7 @@ class ProductsController extends Controller
      */
     public function show($id)
     {
-        $product = Product::findOrFail($id);
-
-        return $product;
+        return new ProductResource(Product::findOrFail($id));
     }
 
     /**
@@ -77,7 +82,7 @@ class ProductsController extends Controller
 
         $product->save();
 
-        return $product;
+        return new ProductResource($product);
     }
 
     /**
@@ -88,6 +93,13 @@ class ProductsController extends Controller
      */
     public function destroy($id)
     {
-        return Product::destroy($id) ? response(null, 200) : abort(404);
+        // 이미지 삭제
+        $product = Product::findOrFail($id);
+
+        if ($product->image) {
+            Storage::disk('public')->delete('images/'.$product->image);
+        }
+        $product->delete();
+        return response(null, 200);
     }
 }

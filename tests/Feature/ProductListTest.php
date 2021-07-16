@@ -36,7 +36,7 @@ class ProductListTest extends TestCase
         $response = $this->getJson('/api/products');
 
         $response->assertStatus(200);
-        $this->assertTrue($response['last_page'] === 2);
+        $this->assertTrue($response['meta']['last_page'] === 2);
 
         $response = $this->getJson('/api/products?page=2');
         $response->assertStatus(200);
